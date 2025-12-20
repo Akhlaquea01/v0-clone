@@ -1,0 +1,151 @@
+# V0-Clone Project Setup Guide
+# =============================
+# Step-by-step implementation and commands to run
+
+## 1. Create Next.js Project
+   npx create-next-app@latest ./
+   # Creates a new Next.js 16 project in the current directory
+   # Includes: React 19, Turbopack, App Router, Tailwind CSS
+
+## 2. Initialize Shadcn UI Components
+   npx shadcn@latest init
+   # Sets up Shadcn UI component library
+   # Creates: components.json, src/components/ui/, src/lib/utils.js
+   # Configures: Tailwind CSS with custom theme variables
+
+## 3. Install Prisma (Database ORM)
+   npm i prisma@5.22.0 @prisma/client@5.22.0
+   # prisma: CLI tool for migrations and schema management
+   # @prisma/client: Auto-generated type-safe database client
+   # NOTE: Using v5.22.0 for stability with Next.js 16
+
+## 4. Initialize Prisma
+   npx prisma init
+   # Creates:
+   #   - prisma/schema.prisma (database schema definition)
+   #   - .env file with DATABASE_URL placeholder
+   # You need to:
+   #   - Set up docker-compose.yml for PostgreSQL
+   #   - Update DATABASE_URL in .env
+
+## 5. Database Commands (Prisma)
+
+   ### Generate Prisma Client
+   npx prisma generate
+   # Generates the Prisma Client based on your schema
+   # Run this after: changing schema.prisma
+   # Creates: node_modules/.prisma/client/
+
+   ### Create & Apply Migrations
+   npx prisma migrate dev --name <migration_name>
+   # Creates a new migration file in prisma/migrations/
+   # Applies the migration to your database
+   # Regenerates Prisma Client automatically
+   # Example: npx prisma migrate dev --name add_user_fields
+
+   ### Reset Database (DESTRUCTIVE)
+   npx prisma migrate reset --force
+   # Drops all tables and data
+   # Reapplies all migrations from scratch
+   # Use when: migration conflicts, starting fresh, test data cleanup
+
+   ### View Database (GUI)
+   npx prisma studio
+   # Opens a browser-based database GUI at http://localhost:5555
+   # View, edit, and delete records visually
+
+## 6. Docker (PostgreSQL Database)
+
+   ### Start Database
+   docker compose up -d
+   # Starts PostgreSQL container in background
+   # Database available at: localhost:5431
+
+   ### Stop Database
+   docker compose down
+   # Stops and removes the PostgreSQL container
+
+   ### View Running Containers
+   docker ps
+   # Lists all running Docker containers
+
+## 7. Clerk Authentication
+
+   ### Install Clerk
+   npm i @clerk/nextjs
+   # Provides: SignIn, SignUp, UserButton components
+   # Middleware for route protection
+
+   ### Required Files:
+   # - src/proxy.js (middleware for Next.js 16)
+   # - src/app/layout.js (wrap with ClerkProvider)
+   # - .env (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY)
+
+   ### Environment Variables (add to .env):
+   # NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+   # CLERK_SECRET_KEY=sk_test_...
+   # NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+   # NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+
+## 8. Development Commands
+
+   ### Start Development Server
+   npm run dev
+   # Starts: Docker DB + Next.js dev server
+   # Available at: http://localhost:3000
+
+   ### Build for Production
+   npm run build
+   # Creates optimized production build
+
+   ### Start Production Server
+   npm start
+   # Runs the production build
+
+   ### Lint Code
+   npm run lint
+   # Runs ESLint to check for code issues
+
+## Project Structure
+   v0-clone/
+   ├── prisma/
+   │   ├── schema.prisma      # Database schema
+   │   └── migrations/        # Migration history
+   ├── src/
+   │   ├── app/               # Next.js App Router pages
+   │   │   ├── (root)/        # Route group for main pages
+   │   │   ├── layout.js      # Root layout with ClerkProvider
+   │   │   └── globals.css    # Global styles & Tailwind config
+   │   ├── components/ui/     # Shadcn UI components
+   │   ├── lib/
+   │   │   ├── db.js          # Prisma client singleton
+   │   │   └── utils.js       # Utility functions (cn)
+   │   ├── modules/
+   │   │   └── auth/actions/  # Server actions for auth
+   │   └── proxy.js           # Clerk middleware (Next.js 16)
+   ├── docker-compose.yml     # PostgreSQL container config
+   ├── package.json           # Dependencies & scripts
+   └── .env                   # Environment variables
+
+## Troubleshooting
+
+   ### Prisma Client Not Found
+   npx prisma generate
+   # Regenerates the Prisma client
+
+   ### Database Connection Failed
+   docker compose up -d
+   # Make sure PostgreSQL container is running
+
+   ### Migration Conflicts
+   npx prisma migrate reset --force
+   npx prisma migrate dev
+   # Reset and reapply all migrations
+
+   ### Turbopack Crashes (Windows)
+   # Enable Developer Mode in Windows Settings:
+   # Settings > Privacy & Security > For Developers > Developer Mode ON
+
+   ### Hydration Mismatch Errors
+   # Add suppressHydrationWarning to <html> and <body> tags
+   # Use dynamic prop on ClerkProvider: <ClerkProvider dynamic>
