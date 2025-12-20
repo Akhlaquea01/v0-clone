@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -24,7 +25,15 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning
       >
         <ClerkProvider dynamic>
-          {children}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+            storageKey="v0-clone-theme"
+          >
+            {children}
+          </ThemeProvider>
         </ClerkProvider>
       </body>
     </html>
