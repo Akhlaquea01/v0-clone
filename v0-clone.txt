@@ -77,7 +77,7 @@
    # Middleware for route protection
 
    ### Required Files:
-   # - src/proxy.js (middleware for Next.js 16)
+   # - src/middleware.js (middleware for Next.js 16)
    # - src/app/layout.js (wrap with ClerkProvider)
    # - .env (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY)
 
@@ -122,7 +122,7 @@
    │   │   └── utils.js       # Utility functions (cn)
    │   ├── modules/
    │   │   └── auth/actions/  # Server actions for auth
-   │   └── proxy.js           # Clerk middleware (Next.js 16)
+   │   └── middleware.js      # Clerk middleware (Next.js 16)
    ├── docker-compose.yml     # PostgreSQL container config
    ├── package.json           # Dependencies & scripts
    └── .env                   # Environment variables
@@ -149,3 +149,8 @@
    ### Hydration Mismatch Errors
    # Add suppressHydrationWarning to <html> and <body> tags
    # Use dynamic prop on ClerkProvider: <ClerkProvider dynamic>
+
+   ### Theme/Dark Mode Not Working
+   # Issue: LocalStorage conflict or Tailwind v4 variant specificity
+   # Fix 1: Add unique storageKey prop to ThemeProvider in src/app/layout.js
+   # Fix 2: Update dark variant in globals.css to: @custom-variant dark (&:where(.dark, .dark *));
