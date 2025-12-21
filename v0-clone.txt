@@ -106,7 +106,37 @@
    npm run lint
    # Runs ESLint to check for code issues
 
-## Project Structure
+## 9. New Implementations & Packages
+
+   ### Inngest (Background Jobs)
+   npm install inngest @inngest/agent-kit
+   # Purpose: Handling background jobs, workflows, and AI agent execution.
+   # Key Files:
+   #   - src/inngest/client.js: Initialized Inngest client
+   #   - src/app/api/inngest/route.js: Next.js API route to handle Inngest events
+   #   - src/inngest/functions.js: Define your background functions (e.g., helloWorld)
+
+   #### Run Inngest Dev Server
+   npx inngest-cli@latest dev
+   # Opens Inngest dashboard at http://localhost:8288
+   # Connects to your local Next.js app to trigger/test functions
+
+   ### TanStack Query (React Query)
+   npm install @tanstack/react-query
+   # Purpose: Managing server state, caching, and data fetching in React components.
+   # Implementation:
+   #   - Wrapped app in `QueryClientProvider` (src/components/query-provider.jsx)
+   #   - Using `useQuery` and `useMutation` hooks for data handling
+   #   - *Note*: Temporarily disabled in layout/forms to simplify current dev flow, but installed and ready.
+
+   ### Sonner (Toast Notifications)
+   npm install sonner
+   # Purpose: Showing success/error toast notifications.
+   # Implementation:
+   #   - Added `<Toaster />` to `src/app/layout.js` inside ThemeProvider
+   #   - Usage: `toast.success("Message")` or `toast.error("Error")`
+
+## Project Structure (Updated)
    v0-clone/
    ├── prisma/
    │   ├── schema.prisma      # Database schema
@@ -114,17 +144,21 @@
    ├── src/
    │   ├── app/               # Next.js App Router pages
    │   │   ├── (root)/        # Route group for main pages
-   │   │   ├── layout.js      # Root layout with ClerkProvider
-   │   │   └── globals.css    # Global styles & Tailwind config
+   │   │   ├── api/inngest/   # Inngest API route
+   │   │   ├── layout.js      # Root layout (Clerk, Theme, Toaster)
+   │   │   └── globals.css    # Styles
    │   ├── components/ui/     # Shadcn UI components
+   │   ├── inngest/           # Inngest client & functions
    │   ├── lib/
-   │   │   ├── db.js          # Prisma client singleton
-   │   │   └── utils.js       # Utility functions (cn)
+   │   │   ├── db.js          # Prisma singleton
+   │   │   └── utils.js       # Utils
    │   ├── modules/
-   │   │   └── auth/actions/  # Server actions for auth
-   │   └── middleware.js      # Clerk middleware (Next.js 16)
+   │   │   ├── auth/          # Auth related actions
+   │   │   ├── home/          # Home page components (ProjectForm)
+   │   │   └── projects/      # Project actions & hooks
+   │   └── middleware.js      # Clerk middleware
    ├── docker-compose.yml     # PostgreSQL container config
-   ├── package.json           # Dependencies & scripts
+   ├── package.json           # Dependencies
    └── .env                   # Environment variables
 
 ## Troubleshooting
@@ -154,3 +188,9 @@
    # Issue: LocalStorage conflict or Tailwind v4 variant specificity
    # Fix 1: Add unique storageKey prop to ThemeProvider in src/app/layout.js
    # Fix 2: Update dark variant in globals.css to: @custom-variant dark (&:where(.dark, .dark *));
+
+   ### "No QueryClient set" Error
+   # Cause: Using `useQuery` or `useMutation` without wrapping the app in `QueryClientProvider`.
+   # Fix:
+   #   1. Create src/components/query-provider.jsx
+   #   2. Import and wrap {children} in src/app/layout.js with <QueryProvider>

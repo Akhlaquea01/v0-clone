@@ -1,7 +1,10 @@
 import { Geist, Geist_Mono } from "next/font/google";
+// import { QueryProvider } from "@/components/query-provider";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import { Toaster } from "sonner";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -25,6 +28,7 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning
       >
         <ClerkProvider dynamic>
+          {/* <QueryProvider> */}
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -32,8 +36,10 @@ export default function RootLayout({ children }) {
             disableTransitionOnChange
             storageKey="v0-clone-theme"
           >
+            <Toaster />
             {children}
           </ThemeProvider>
+          {/* </QueryProvider> */}
         </ClerkProvider>
       </body>
     </html>
