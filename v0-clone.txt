@@ -161,6 +161,33 @@
    ├── package.json           # Dependencies
    └── .env                   # Environment variables
 
+## 10. AI Agent Setup (Gemini)
+
+   ### Tech Stack
+   # - Library: @inngest/agent-kit
+   # - AI Provider: Google Gemini (via Google Generative AI SDK)
+   # - Model: gemini-2.5-flash
+
+   ### Implementation Dependencies
+   # npm install @inngest/agent-kit
+   # npm install @google/generative-ai (Peer dependency usually handled or implicit)
+
+   ### Configuration Details
+   # Location: src/inngest/functions.js
+   # Setup:
+   #   1. Import `gemini`, `createAgent` from `@inngest/agent-kit`
+   #   2. Initialize model: `const model = gemini({ model: "gemini-2.5-flash" });`
+   #   3. Define Agent:
+   #      createAgent({
+   #        name: "agent-name",
+   #        model,
+   #        system: () => "System prompt function", // MUST be a function
+   #      })
+
+   ### Trigger
+   # Event Name: 'agent/hello'
+   # Function ID: 'hello-world'
+
 ## Troubleshooting
 
    ### Prisma Client Not Found
@@ -194,3 +221,9 @@
    # Fix:
    #   1. Create src/components/query-provider.jsx
    #   2. Import and wrap {children} in src/app/layout.js with <QueryProvider>
+
+   ### Inngest Agent Error: "this.system is not a function"
+   # Cause: Missing 'system' property or invalid type in createAgent configuration.
+   # Fix:
+   #   - Add `system` property to createAgent() config in src/inngest/functions.js
+   #   - Ensure it is a function returning a string: `system: () => "System Prompt"`

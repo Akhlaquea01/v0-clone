@@ -15,6 +15,7 @@ import { Form, FormField } from "@/components/ui/form";
 // import { onInvoke } from "../actions";
 // import { useCreateProject } from "@/modules/projects/hooks/project";
 import { createProject } from "@/modules/projects/actions";
+import { onInvoke } from "../actions";
 
 // import { onInvoke } from "../actions";
 
@@ -110,11 +111,21 @@ const ProjectsForm = () => {
 
 
     const isButtonDisabled = isPending || !form.watch("content").trim()
-
+    const onInvokeAI = async () => {
+        try {
+            setIsPending(true);
+            const res = await onInvoke();
+            toast.success("Agent invoked successfully")
+        } catch (error) {
+            toast.error(error.message || "Failed to create project");
+        } finally {
+            setIsPending(false);
+        }
+    }
     return (
         <div className="space-y-8">
             {/* Template Grid */}
-
+            <Button onClick={onInvokeAI}>Invoke Agent</Button>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {PROJECT_TEMPLATES.map((template, index) => (
                     <button
