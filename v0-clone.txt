@@ -188,6 +188,37 @@
    # Event Name: 'agent/hello'
    # Function ID: 'hello-world'
 
+
+## 11. E2B Sandbox Setup (Code Interpreter)
+
+   ### Prerequisites
+   npm i @e2b/code-interpreter
+   npm i -g @e2b/cli
+   # @e2b/code-interpreter: SDK to communicate with the sandbox
+   # @e2b/cli: CLI tool to build and manage custom templates
+
+   ### Authentication & Verification
+   e2b auth login
+   # Logs you into your E2B account
+
+   e2b sandbox list
+   # Lists your available sandbox templates to verify access
+
+   ### Build Custom Template
+   # 1. Navigate to the template directory
+   cd sanbox-templates/nextjs
+
+   # 2. Build the template
+   e2b template build --name v0-nextjs-build-atts --cmd "/compile_page.sh"
+   # --name: The alias for your template (must be unique)
+   # --cmd: The startup command for the sandbox
+   # Note: If you get a '403 Forbidden' error, try a different name or check your team permissions.
+
+   ### Publish Template
+   # To make the template available to your team permanently:
+   e2b template publish -t {teamId}
+   # Replace {teamId} with your actual Team ID found in the E2B dashboard.
+
 ## Troubleshooting
 
    ### Prisma Client Not Found
@@ -227,3 +258,7 @@
    # Fix:
    #   - Add `system` property to createAgent() config in src/inngest/functions.js
    #   - Ensure it is a function returning a string: `system: () => "System Prompt"`
+
+   ### E2B Build Error: "403 Forbidden"
+   # Cause: The template name (alias) is already taken.
+   # Fix: Use a unique name for your template, e.g., v0-nextjs-build-yourname-01.
