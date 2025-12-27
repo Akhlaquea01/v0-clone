@@ -12,6 +12,7 @@ import { lastAssistantTextMessageContent } from "./utils";
 import db from "@/lib/db";
 import { MessageRole, MessageType } from "@prisma/client";
 
+const model = gemini({ model: process.env.MODEL })
 export const codeAgentFunction = inngest.createFunction(
     { id: "code-agent" },
     { event: "code-agent/run" },
@@ -27,7 +28,7 @@ export const codeAgentFunction = inngest.createFunction(
             name: "code-agent",
             description: "An expert coding agent",
             system: PROMPT,
-            model: gemini({ model: "gemini-2.5-flash" }),
+            model: model,
             tools: [
                 // 1. Terminal
                 createTool({
@@ -170,14 +171,13 @@ export const codeAgentFunction = inngest.createFunction(
             name: "fragment-title-generator",
             description: "Generate a title for the fragment",
             system: FRAGMENT_TITLE_PROMPT,
-            model: gemini({ model: "gemini-2.5-flash" })
+            model: model
         })
         const responseGenerator = createAgent({
             name: "response-generator",
             description: "Generate a response for the fragment",
             system: RESPONSE_PROMPT,
-            model: gemini
-                ({ model: "gemini-2.5-flash" })
+            model: model
         })
 
 
