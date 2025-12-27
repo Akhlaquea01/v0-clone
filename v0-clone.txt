@@ -143,24 +143,32 @@
    │   └── migrations/        # Migration history
    ├── src/
    │   ├── app/               # Next.js App Router pages
-   │   │   ├── (root)/        # Route group for main pages
-   │   │   │   ├── projects/
-   │   │   │   │   └── [projectId]/  # Dynamic project route
-   │   │   │   │       └── page.jsx  # Project detail page
-   │   │   │   ├── page.jsx   # Home page
-   │   │   │   └── layout.jsx # Root layout
+   │   │   ├── (root)/        # Route group for main pages (with layout)
+   │   │   │   ├── page.jsx   # Home page (ProjectForm + ProjectList)
+   │   │   │   └── layout.jsx # Root layout with navigation
+   │   │   ├── projects/
+   │   │   │   └── [projectId]/  # Dynamic project route (outside root group)
+   │   │   │       └── page.jsx  # Project detail page (renders ProjectView)
    │   │   ├── api/inngest/   # Inngest API route
    │   │   ├── layout.js      # Root layout (Clerk, Theme, Toaster)
    │   │   └── globals.css    # Styles
-   │   ├── components/ui/     # Shadcn UI components
+   │   ├── components/ui/     # Shadcn UI components (includes Spinner)
    │   ├── inngest/           # Inngest client & functions
    │   ├── lib/
    │   │   ├── db.js          # Prisma singleton
    │   │   └── utils.js       # Utils
    │   ├── modules/
    │   │   ├── auth/          # Auth related actions
-   │   │   ├── home/          # Home page components (ProjectForm)
-   │   │   └── projects/      # Project actions & hooks
+   │   │   ├── home/
+   │   │   │   └── components/
+   │   │   │       ├── project-form.jsx   # Form to create new project
+   │   │   │       └── project-list.jsx   # Carousel/grid of user projects
+   │   │   └── projects/
+   │   │       ├── actions/index.js       # Server actions (CRUD)
+   │   │       ├── hooks/project.js       # React Query hooks
+   │   │       └── components/
+   │   │           ├── project-view.jsx   # Main project view (ResizablePanels)
+   │   │           └── project-header.jsx # Header with dropdown menu
    │   └── middleware.js      # Clerk middleware
    ├── docker-compose.yml     # PostgreSQL container config
    ├── package.json           # Dependencies

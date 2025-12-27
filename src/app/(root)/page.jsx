@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import React from 'react'
 import ProjectForm from '@/modules/home/components/project-form'
+import ProjectList from '@/modules/home/components/project-list'
 
 const Page = () => {
   return (
@@ -16,6 +17,7 @@ const Page = () => {
           <div className="max-w-3xl w-full">
             <ProjectForm />
           </div>
+          <ProjectList />
         </section>
       </div>
     </div>
