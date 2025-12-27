@@ -161,33 +161,38 @@
    ├── package.json           # Dependencies
    └── .env                   # Environment variables
 
-## 10. AI Agent Setup (Gemini)
+## 10. AI Agent Setup (Gemini & E2B Code Interpreter)
 
    ### Tech Stack
-   # - Library: @inngest/agent-kit
-   # - AI Provider: Google Gemini (via Google Generative AI SDK)
-   # - Model: gemini-2.5-flash
-
-   ### Implementation Dependencies
-   # npm install @inngest/agent-kit
-   # npm install @google/generative-ai (Peer dependency usually handled or implicit)
+   # - Library: @inngest/agent-kit, @e2b/code-interpreter, zod
+   # - AI Provider: Google Gemini (gemini-2.5-flash)
+   # - Execution Environment: E2B Sandbox (Custom Next.js 16 Template)
 
    ### Configuration Details
    # Location: src/inngest/functions.js
-   # Setup:
-   #   1. Import `gemini`, `createAgent` from `@inngest/agent-kit`
-   #   2. Initialize model: `const model = gemini({ model: "gemini-2.5-flash" });`
-   #   3. Define Agent:
-   #      createAgent({
-   #        name: "agent-name",
-   #        model,
-   #        system: () => "System prompt function", // MUST be a function
-   #      })
+   # Helper Files:
+   #   - src/prompt.js: Contains the "PROMPT" constant with strict system instructions for the agent.
+   #   - src/inngest/utils.js: Helper (lastAssistantTextMessageContent) to parse agent output.
 
-   ### Trigger
-   # Event Name: 'agent/hello'
-   # Function ID: 'hello-world'
+   ### Agent Capability (The "Code Agent")
+   # Name: code-agent
+   # Description: Expert coding agent that can write code, run commands, and manage files.
+   # System Prompt: Imported from src/prompt.js (enforces Next.js 16/Tailwind/Shadcn rules).
 
+   ### Implemented Tools (Agent Tools)
+   # 1. terminal: Executes shell commands in the E2B sandbox.
+   # 2. createOrUpdateFiles: Writes/updates multiple files in the sandbox.
+   # 3. readFiles: Reads content of specified files from the sandbox.
+   # Reference: https://agentkit.inngest.com/concepts/tools
+
+   ### Trigger & Execution
+   # Event Name: 'code-agent/run'
+   # Function ID: 'code-agent'
+   # Workflow:
+   #   1. Agent receives a prompt.
+   #   2. "Network" (of agents) processes the request (router loop).
+   #   3. Tools execute actions in the E2B sandbox.
+   #   4. Returns: Sandbox URL, list of modified files, and summary.
 
 ## 11. E2B Sandbox Setup (Code Interpreter)
 
