@@ -178,6 +178,7 @@
    # Name: code-agent
    # Description: Expert coding agent that can write code, run commands, and manage files.
    # System Prompt: Imported from src/prompt.js (enforces Next.js 16/Tailwind/Shadcn rules).
+   # NOTE: System prompt is passed directly as value: `system: PROMPT` (not a function)
 
    ### Implemented Tools (Agent Tools)
    # 1. terminal: Executes shell commands in the E2B sandbox.
@@ -188,11 +189,25 @@
    ### Trigger & Execution
    # Event Name: 'code-agent/run'
    # Function ID: 'code-agent'
+   # Sandbox Template: 'v0-nextjs-build-new'
    # Workflow:
    #   1. Agent receives a prompt.
    #   2. "Network" (of agents) processes the request (router loop).
    #   3. Tools execute actions in the E2B sandbox.
-   #   4. Returns: Sandbox URL, list of modified files, and summary.
+   #   4. Saves result to database with Message + Fragment (nested create).
+   #   5. Returns: Sandbox URL, list of modified files, and summary.
+
+   ### Database Result Structure
+   # The agent saves results using Prisma's nested create:
+   #   db.message.create({
+   #     data: {
+   #       projectId, content, role, type,
+   #       fragments: {
+   #         create: { sandboxUrl, title, files }
+   #       }
+   #     }
+   #   })
+
 
 ## 11. E2B Sandbox Setup (Code Interpreter)
 

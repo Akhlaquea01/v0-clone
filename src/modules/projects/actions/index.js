@@ -1,6 +1,6 @@
 "use server";
 
-// import { inngest } from "@/inngest/client";
+import { inngest } from "@/inngest/client";
 import db from "@/lib/db";
 import { consumeCredits } from "@/lib/usage";
 import { getCurrentUser } from "@/modules/auth/actions";
@@ -45,13 +45,13 @@ export const createProject = async (value) => {
         },
     });
 
-    // await inngest.send({
-    //     name: "code-agent/run",
-    //     data: {
-    //         value: value,
-    //         projectId: newProject.id,
-    //     },
-    // });
+    await inngest.send({
+        name: "code-agent/run",
+        data: {
+            value: value,
+            projectId: newProject.id,
+        },
+    });
 
     return newProject;
 };

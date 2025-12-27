@@ -1,5 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
-// import { QueryProvider } from "@/components/query-provider";
+import { QueryProvider } from "@/components/query-provider";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -28,7 +28,6 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning
       >
         <ClerkProvider dynamic>
-          {/* <QueryProvider> */}
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -36,10 +35,11 @@ export default function RootLayout({ children }) {
             disableTransitionOnChange
             storageKey="v0-clone-theme"
           >
-            <Toaster />
-            {children}
+            <QueryProvider>
+              <Toaster />
+              {children}
+            </QueryProvider>
           </ThemeProvider>
-          {/* </QueryProvider> */}
         </ClerkProvider>
       </body>
     </html>

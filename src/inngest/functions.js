@@ -1,45 +1,58 @@
 import { inngest } from "./client";
-import { gemini, createAgent, createTool, createNetwork } from "@inngest/agent-kit";
+import {
+    gemini,
+    createAgent,
+    createTool,
+    createNetwork,
+} from "@inngest/agent-kit";
 import Sandbox from "@e2b/code-interpreter";
-import { z } from "zod";
+import z from "zod";
 import { PROMPT } from "@/prompt";
-import { lastAssistantTextMessageContent } from "./utils"
+import { lastAssistantTextMessageContent } from "./utils";
+import db from "@/lib/db";
+import { MessageRole, MessageType } from "@prisma/client";
+
 export const codeAgentFunction = inngest.createFunction(
-    { id: 'code-agent' },
-    { event: 'code-agent/run' },
+    { id: "code-agent" },
+    { event: "code-agent/run" },
+
     async ({ event, step }) => {
-        // Step 1: Create a new sandbox
+        // Step-1
         const sandboxId = await step.run("get-sandbox-id", async () => {
-            const sandbox = await Sandbox.create("v0-nextjs-build-atts");
+            const sandbox = await Sandbox.create("v0-nextjs-build-new");
             return sandbox.sandboxId;
-        })
-        // Step 2: Create a new code agent
+        });
+
         const codeAgent = createAgent({
             name: "code-agent",
-            description: "An expert coding agent that can write code for you",
+            description: "An expert coding agent",
+            system: PROMPT,
             model: gemini({ model: "gemini-2.5-flash" }),
-            system: () => PROMPT,
             tools: [
-                //1.Terminal
+                // 1. Terminal
                 createTool({
                     name: "terminal",
-                    description: "A terminal that can run commands",
+                    description: "Use the terminal to run commands",
                     parameters: z.object({
-                        command: z.string().describe("The command to run"),
+                        command: z.string(),
                     }),
                     handler: async ({ command }, { step }) => {
                         return await step?.run("terminal", async () => {
-                            const buffers = { stdout: "", stderr: "" }
+                            const buffers = { stdout: "", stderr: "" };
+
                             try {
                                 const sandbox = await Sandbox.connect(sandboxId);
+
                                 const result = await sandbox.commands.run(command, {
                                     onStdout: (data) => {
                                         buffers.stdout += data;
                                     },
+
                                     onStderr: (data) => {
                                         buffers.stderr += data;
                                     },
                                 });
+
                                 return result.stdout;
                             } catch (error) {
                                 console.log(
@@ -48,10 +61,10 @@ export const codeAgentFunction = inngest.createFunction(
 
                                 return `Command failed: ${error} \n stdout: ${buffers.stdout}\n stderr: ${buffers.stderr}`;
                             }
-
-                        })
+                        });
                     },
                 }),
+
                 // 2. createOrUpdateFiles
                 createTool({
                     name: "createOrUpdateFiles",
@@ -91,10 +104,11 @@ export const codeAgentFunction = inngest.createFunction(
                         }
                     },
                 }),
-                //3. readfiles
+                // 3. readFiles
                 createTool({
-                    name: "readfiles",
-                    description: "A tool that can read files in sandbox",
+                    name: "readFiles",
+                    description: "Read files in the sandbox",
+
                     parameters: z.object({
                         files: z.array(z.string()),
                     }),
@@ -109,28 +123,29 @@ export const codeAgentFunction = inngest.createFunction(
                                     const content = await sanbox.files.read(file);
                                     contents.push({ path: file, content });
                                 }
-                                return JSON.stringify(contents)
+                                return JSON.stringify(contents);
                             } catch (error) {
-                                return "Error" + error
+                                return "Error" + error;
                             }
                         });
                     },
                 }),
             ],
+
             lifecycle: {
                 onResponse: async ({ result, network }) => {
-                    const lastAssistantMessageText = lastAssistantTextMessageContent(result);
+                    const lastAssistantMessageText =
+                        lastAssistantTextMessageContent(result);
 
                     if (lastAssistantMessageText && network) {
                         if (lastAssistantMessageText.includes("<task_summary>")) {
-                            network.state.data.summary = lastAssistantMessageText
+                            network.state.data.summary = lastAssistantMessageText;
                         }
                     }
 
                     return result;
-                }
-            }
-
+                },
+            },
         });
 
         const network = createNetwork({
@@ -142,16 +157,18 @@ export const codeAgentFunction = inngest.createFunction(
                 const summary = network.state.data.summary;
 
                 if (summary) {
-                    return
+                    return;
                 }
 
-                return codeAgent
-            }
-        })
+                return codeAgent;
+            },
+        });
 
-        const result = await network.run(event.data.value)
+        const result = await network.run(event.data.value);
 
-        const isError = !result.state.data.summary || Object.keys(result.state.data.files || {}).length === 0;
+        const isError =
+            !result.state.data.summary ||
+            Object.keys(result.state.data.files || {}).length === 0;
 
         const sandboxUrl = await step.run("get-sandbox-url", async () => {
             const sandbox = await Sandbox.connect(sandboxId);
@@ -160,11 +177,43 @@ export const codeAgentFunction = inngest.createFunction(
             return `http://${host}`;
         });
 
+        await step.run("save-result", async () => {
+            if (isError) {
+                return await db.message.create({
+                    data: {
+                        projectId: event.data.projectId,
+                        content: "Something went wrong. Please try again",
+                        role: MessageRole.ASSISTANT,
+                        type: MessageType.ERROR
+                    }
+                })
+            }
+
+
+            return await db.message.create({
+                data: {
+                    projectId: event.data.projectId,
+                    content: result.state.data.summary,
+                    role: MessageRole.ASSISTANT,
+                    type: MessageType.RESULT,
+                    fragments: {
+                        create: {
+                            sandboxUrl: sandboxUrl,
+                            title: "Untitled",
+                            files: result.state.data.files
+                        }
+                    }
+                }
+            })
+        })
+
+
+
         return {
             url: sandboxUrl,
             title: "Untitled",
             files: result.state.data.files,
-            summary: result.state.data.summary
+            summary: result.state.data.summary,
         };
     }
 );
