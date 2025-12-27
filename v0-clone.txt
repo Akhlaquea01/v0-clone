@@ -149,13 +149,20 @@
    # Usage: Project view splits into chat panel (35%) and preview panel (65%)
    # NOTE: Using v3.0.6 for compatibility with Next.js 16
 
+   ### PrismJS (Syntax Highlighting)
+   npm install prismjs
+   # Purpose: Syntax highlighting for code view in file explorer
+   # Languages: typescript, jsx, python, tsx, javascript
+   # Theme: Custom GitHub-style dark/light theme (code-theme.css)
+
 ## 12. Project View UI Components
 
    ### ProjectView (src/modules/projects/components/project-view.jsx)
    # Main container for project workspace
    # Uses ResizablePanelGroup with horizontal split:
-   #   - Left Panel (35%): Chat/messages area with ProjectHeader
-   #   - Right Panel (65%): Code preview and demo tabs (TODO)
+   #   - Left Panel (35%): Chat/messages area with ProjectHeader + MessageContainer
+   #   - Right Panel (65%): Tabs for Preview (FragmentWeb) and Code (FileExplorer)
+   # State: activeFragment (selected sandbox), tabState (preview/code)
 
    ### ProjectHeader (src/modules/projects/components/project-header.jsx)
    # Header component with:
@@ -171,6 +178,77 @@
    #   - Mobile: Carousel with navigation arrows
    #   - Hover animations and emerald accent colors
    # Uses: useGetProjects hook, Carousel component
+
+   ### MessageContainer (src/modules/projects/components/message-container.jsx)
+   # Displays chat messages with auto-scroll and loading states
+   # Features:
+   #   - Prefetches messages on mount
+   #   - Auto-selects latest assistant's fragment
+   #   - Shows MessageLoading when waiting for AI response
+   # Uses: useGetMessages hook, prefetchMessages
+
+   ### MessageCard (src/modules/projects/components/message-card.jsx)
+   # Renders individual chat messages (user or assistant)
+   # Types: UserMessage (right-aligned), AssistantMessage (with logo, timestamp)
+   # FragmentCard: Clickable button to select code preview
+
+   ### MessageForm (src/modules/projects/components/message-form.jsx)
+   # Chat input form with auto-resize textarea
+   # Features: Cmd+Enter submit, validation, loading state
+   # Uses: useCreateMessages hook, react-textarea-autosize
+
+   ### MessageLoading (src/modules/projects/components/message-loader.jsx)
+   # Animated loading indicator with rotating status messages
+   # Messages: "Thinking...", "Generating...", "Almost there..." etc.
+
+   ### FragmentWeb (src/modules/projects/components/fragment-web.jsx)
+   # Preview panel for sandbox URL (iframe)
+   # Features:
+   #   - Refresh button (reloads iframe)
+   #   - Copy URL to clipboard
+   #   - Open in new tab
+   # Uses: Hint component for tooltips
+
+   ### FileExplorer (src/modules/projects/components/file-explorer.jsx)
+   # Code view with file tree sidebar
+   # Features:
+   #   - Resizable tree/code split (25%/75%)
+   #   - Breadcrumb navigation
+   #   - Copy code to clipboard
+   # Uses: TreeView, CodeView, convertFilesToTreeItems
+
+   ### TreeView (src/modules/projects/components/tree-view.jsx)
+   # File tree sidebar using Shadcn Sidebar components
+   # Recursive rendering of folders (collapsible) and files
+   # Icons: FolderIcon, FileIcon, ChevronRightIcon
+
+   ### CodeView (src/modules/projects/components/code-view/index.jsx)
+   # Syntax-highlighted code display using PrismJS
+   # Auto-highlights on code/language change
+   # Theme: code-theme.css (GitHub-style light/dark)
+
+## 13. Messages Module
+
+   ### Server Actions (src/modules/messages/actions/index.js)
+   # - createMessages(value, projectId): Creates user message + triggers Inngest agent
+   # - getMessages(projectId): Fetches all messages with fragments (ordered by updatedAt)
+
+   ### React Query Hooks (src/modules/messages/hooks/message.js)
+   # - prefetchMessages(queryClient, projectId): Prefetch for faster loading
+   # - useGetMessages(projectId): Query with 10s stale time, 5s refetch interval
+   # - useCreateMessages(projectId): Mutation with cache invalidation
+
+## 14. Utility Components
+
+   ### Hint (src/components/ui/hint.jsx)
+   # Tooltip wrapper for consistent tooltip styling
+   # Props: text, label, side, align, sideOffset, delayDuration
+   # Uses: Shadcn Tooltip components
+
+   ### convertFilesToTreeItems (src/lib/utils.js)
+   # Utility function to transform flat file paths into nested tree structure
+   # Input: { "src/app/page.jsx": "..." }
+   # Output: [["src", ["app", "page.jsx"]]]
 
 
 ## Project Structure (Updated)
@@ -193,19 +271,32 @@
    │   ├── inngest/           # Inngest client & functions
    │   ├── lib/
    │   │   ├── db.js          # Prisma singleton
-   │   │   └── utils.js       # Utils
+   │   │   └── utils.js       # Utils + convertFilesToTreeItems
    │   ├── modules/
    │   │   ├── auth/          # Auth related actions
    │   │   ├── home/
    │   │   │   └── components/
    │   │   │       ├── project-form.jsx   # Form to create new project
    │   │   │       └── project-list.jsx   # Carousel/grid of user projects
+   │   │   ├── messages/
+   │   │   │   ├── actions/index.js       # createMessages, getMessages
+   │   │   │   └── hooks/message.js       # useGetMessages, useCreateMessages
    │   │   └── projects/
    │   │       ├── actions/index.js       # Server actions (CRUD)
    │   │       ├── hooks/project.js       # React Query hooks
    │   │       └── components/
-   │   │           ├── project-view.jsx   # Main project view (ResizablePanels)
-   │   │           └── project-header.jsx # Header with dropdown menu
+   │   │           ├── project-view.jsx     # Main project view (ResizablePanels)
+   │   │           ├── project-header.jsx   # Header with dropdown menu
+   │   │           ├── message-container.jsx # Chat messages display
+   │   │           ├── message-card.jsx     # Individual message component
+   │   │           ├── message-form.jsx     # Chat input form
+   │   │           ├── message-loader.jsx   # Loading animation
+   │   │           ├── fragment-web.jsx     # Sandbox preview iframe
+   │   │           ├── file-explorer.jsx    # Code view with tree
+   │   │           ├── tree-view.jsx        # File tree sidebar
+   │   │           └── code-view/
+   │   │               ├── index.jsx        # PrismJS code display
+   │   │               └── code-theme.css   # GitHub dark/light theme
    │   └── middleware.js      # Clerk middleware
    ├── docker-compose.yml     # PostgreSQL container config
    ├── package.json           # Dependencies

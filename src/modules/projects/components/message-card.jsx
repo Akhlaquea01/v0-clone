@@ -61,6 +61,7 @@ const AssistantMessage = ({
         >
             <div className="flex items-center gap-2 pl-2 mb-2">
                 <Image
+                    alt="img"
                     src={"/logo.svg"}
                     height={30}
                     width={30}
