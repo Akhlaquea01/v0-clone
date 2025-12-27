@@ -250,6 +250,17 @@
    # Input: { "src/app/page.jsx": "..." }
    # Output: [["src", ["app", "page.jsx"]]]
 
+   ### Response (src/components/ai-elements/response.jsx)
+   # Markdown rendering component using Streamdown
+   # Purpose: Renders AI responses with proper markdown formatting
+   # Uses: streamdown library, memo for performance
+   # Usage: <Response>{markdownContent}</Response>
+
+   ### Streamdown Package
+   npm install streamdown
+   # Purpose: Markdown streaming and rendering
+   # Used in: Response component for AI message display
+
 
 ## Project Structure (Updated)
    v0-clone/
@@ -267,7 +278,10 @@
    │   │   ├── api/inngest/   # Inngest API route
    │   │   ├── layout.js      # Root layout (Clerk, Theme, Toaster)
    │   │   └── globals.css    # Styles
-   │   ├── components/ui/     # Shadcn UI components (includes Spinner)
+   │   ├── components/
+   │   │   ├── ui/               # Shadcn UI components (Spinner, Hint, etc.)
+   │   │   └── ai-elements/
+   │   │       └── response.jsx  # Markdown rendering with Streamdown
    │   ├── inngest/           # Inngest client & functions
    │   ├── lib/
    │   │   ├── db.js          # Prisma singleton
@@ -312,31 +326,50 @@
    ### Configuration Details
    # Location: src/inngest/functions.js
    # Helper Files:
-   #   - src/prompt.js: Contains the "PROMPT" constant with strict system instructions for the agent.
-   #   - src/inngest/utils.js: Helper (lastAssistantTextMessageContent) to parse agent output.
+   #   - src/prompt.js: Contains multiple prompts for the agent system
+   #   - src/inngest/utils.js: Helper (lastAssistantTextMessageContent) to parse agent output
 
-   ### Agent Capability (The "Code Agent")
-   # Name: code-agent
-   # Description: Expert coding agent that can write code, run commands, and manage files.
-   # System Prompt: Imported from src/prompt.js (enforces Next.js 16/Tailwind/Shadcn rules).
-   # NOTE: System prompt is passed directly as value: `system: PROMPT` (not a function)
+   ### System Prompts (src/prompt.js)
+   # PROMPT: Main agent prompt for code generation (Next.js 16/Tailwind/Shadcn)
+   # FRAGMENT_TITLE_PROMPT: Generates short 3-word titles for fragments (e.g., "Landing Page")
+   # RESPONSE_PROMPT: Generates user-friendly 1-3 sentence responses explaining what was built
 
-   ### Implemented Tools (Agent Tools)
-   # 1. terminal: Executes shell commands in the E2B sandbox.
-   # 2. createOrUpdateFiles: Writes/updates multiple files in the sandbox.
-   # 3. readFiles: Reads content of specified files from the sandbox.
+   ### Multi-Agent Architecture
+   # 1. Code Agent (Primary)
+   #    - Name: code-agent
+   #    - Purpose: Writes code, runs commands, manages files in sandbox
+   #    - System: PROMPT (enforces Next.js/Tailwind/Shadcn rules)
+   #
+   # 2. Fragment Title Generator (Post-processing)
+   #    - Name: fragment-title-generator
+   #    - Purpose: Creates short descriptive titles for code fragments
+   #    - System: FRAGMENT_TITLE_PROMPT
+   #    - Output: Max 3 words, title case (e.g., "Chat Widget")
+   #
+   # 3. Response Generator (Post-processing)
+   #    - Name: response-generator
+   #    - Purpose: Creates user-friendly explanation of what was built
+   #    - System: RESPONSE_PROMPT
+   #    - Output: 1-3 sentences in markdown format
+
+   ### Implemented Tools (Code Agent)
+   # 1. terminal: Executes shell commands in the E2B sandbox
+   # 2. createOrUpdateFiles: Writes/updates multiple files in the sandbox
+   # 3. readFiles: Reads content of specified files from the sandbox
    # Reference: https://agentkit.inngest.com/concepts/tools
 
-   ### Trigger & Execution
+   ### Trigger & Execution Workflow
    # Event Name: 'code-agent/run'
    # Function ID: 'code-agent'
    # Sandbox Template: 'v0-nextjs-build-new'
+   #
    # Workflow:
-   #   1. Agent receives a prompt.
-   #   2. "Network" (of agents) processes the request (router loop).
-   #   3. Tools execute actions in the E2B sandbox.
-   #   4. Saves result to database with Message + Fragment (nested create).
-   #   5. Returns: Sandbox URL, list of modified files, and summary.
+   #   1. Code Agent receives prompt and generates code in sandbox
+   #   2. Network router loops until task_summary is found
+   #   3. Fragment Title Generator creates title from summary
+   #   4. Response Generator creates user-friendly message
+   #   5. Results saved to database: Message + Fragment (nested create)
+   #   6. Returns: Sandbox URL, files, title, and response
 
    ### Database Result Structure
    # The agent saves results using Prisma's nested create:
