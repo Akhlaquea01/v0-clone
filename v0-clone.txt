@@ -127,7 +127,13 @@
    # Implementation:
    #   - Wrapped app in `QueryClientProvider` (src/components/query-provider.jsx)
    #   - Using `useQuery` and `useMutation` hooks for data handling
-   #   - *Note*: Temporarily disabled in layout/forms to simplify current dev flow, but installed and ready.
+
+   ### React Query Hooks (Project Module)
+   # Location: src/modules/projects/hooks/project.js
+   # Available Hooks:
+   #   - useGetProjects(): Fetches all user projects
+   #   - useCreateProject(): Mutation to create a new project
+   #   - useGetProjectById(projectId): Fetches a single project by ID
 
    ### Sonner (Toast Notifications)
    npm install sonner
@@ -135,6 +141,37 @@
    # Implementation:
    #   - Added `<Toaster />` to `src/app/layout.js` inside ThemeProvider
    #   - Usage: `toast.success("Message")` or `toast.error("Error")`
+
+   ### React Resizable Panels (Project View Layout)
+   npm install react-resizable-panels@3.0.6
+   # Purpose: Create resizable split-pane layouts for the project view.
+   # Components: ResizablePanelGroup, ResizablePanel, ResizableHandle
+   # Usage: Project view splits into chat panel (35%) and preview panel (65%)
+   # NOTE: Using v3.0.6 for compatibility with Next.js 16
+
+## 12. Project View UI Components
+
+   ### ProjectView (src/modules/projects/components/project-view.jsx)
+   # Main container for project workspace
+   # Uses ResizablePanelGroup with horizontal split:
+   #   - Left Panel (35%): Chat/messages area with ProjectHeader
+   #   - Right Panel (65%): Code preview and demo tabs (TODO)
+
+   ### ProjectHeader (src/modules/projects/components/project-header.jsx)
+   # Header component with:
+   #   - Logo and project name dropdown
+   #   - Navigation back to dashboard
+   #   - Theme switcher (Light/Dark/System)
+   # Uses: useGetProjectById hook, Dropdown Menu, next-themes
+
+   ### ProjectList (src/modules/home/components/project-list.jsx)
+   # Displays user's projects on the home page
+   # Features:
+   #   - Desktop: 3-column grid layout
+   #   - Mobile: Carousel with navigation arrows
+   #   - Hover animations and emerald accent colors
+   # Uses: useGetProjects hook, Carousel component
+
 
 ## Project Structure (Updated)
    v0-clone/
