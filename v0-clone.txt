@@ -144,6 +144,11 @@
    ├── src/
    │   ├── app/               # Next.js App Router pages
    │   │   ├── (root)/        # Route group for main pages
+   │   │   │   ├── projects/
+   │   │   │   │   └── [projectId]/  # Dynamic project route
+   │   │   │   │       └── page.jsx  # Project detail page
+   │   │   │   ├── page.jsx   # Home page
+   │   │   │   └── layout.jsx # Root layout
    │   │   ├── api/inngest/   # Inngest API route
    │   │   ├── layout.js      # Root layout (Clerk, Theme, Toaster)
    │   │   └── globals.css    # Styles
@@ -282,3 +287,22 @@
    ### E2B Build Error: "403 Forbidden"
    # Cause: The template name (alias) is already taken.
    # Fix: Use a unique name for your template, e.g., v0-nextjs-build-yourname-01.
+
+   ### Inngest AgentKit: "TypeError: _a.clone is not a function"
+   # Cause: Version incompatibility or network.run() not receiving the step instance.
+   # Fix Option 1: Pass step to network.run(): `network.run(input, { step })`
+   # Fix Option 2: Downgrade inngest to v3.44.2 if issues persist.
+   # Reference: https://github.com/inngest/agent-kit/issues/196
+
+   ### Inngest AgentKit: "Cannot read properties of undefined (reading 'state')"
+   # Cause: Accessing network.state.data before it's initialized.
+   # Fix: Use optional chaining: `network?.state?.data?.files || {}`
+   # Or add defaultState to createNetwork():
+   #   createNetwork({
+   #     defaultState: { files: {}, summary: null },
+   #     ...
+   #   })
+
+   ### 404 on /projects/[id] after project creation
+   # Cause: Missing dynamic route page.
+   # Fix: Create src/app/(root)/projects/[projectId]/page.jsx
