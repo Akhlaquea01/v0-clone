@@ -45,7 +45,7 @@ const MessageLoading = () => {
                     alt="Vibe"
                     width={28}
                     height={28}
-                    className="shrink-0 invert dark:invert-0"
+                    className="shrink-0 invert-0 dark:invert"
                 />
             </div>
 

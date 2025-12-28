@@ -1,4 +1,32 @@
+/**
+ * @fileoverview AI Agent Prompts Configuration
+ *
+ * This module defines the system prompts used by the AI code agents.
+ * These prompts guide the agent's behavior, constraints, and output format.
+ *
+ * Prompts:
+ * - RESPONSE_PROMPT: Generates user-friendly response messages
+ * - FRAGMENT_TITLE_PROMPT: Generates short titles for code fragments
+ * - PROMPT: Main system prompt for the code generation agent
+ *
+ * @module prompt
+ */
 
+/**
+ * Response Generator Prompt
+ *
+ * Used by the response generator agent to create user-friendly messages
+ * explaining what was built. The output is shown to the user as the
+ * assistant's message in the chat interface.
+ *
+ * Guidelines:
+ * - Casual, friendly tone
+ * - 1-3 sentences
+ * - Markdown formatting supported
+ * - Focus on what was built, not technical details
+ *
+ * @constant {string}
+ */
 export const RESPONSE_PROMPT = `
 You are the final agent in a multi-agent system.
 Your job is to generate a short, user-friendly message explaining what was just built, based on the <task_summary> provided by the other agents.
@@ -12,7 +40,21 @@ Format your response in markdown. You can use:
 - \`code\` for technical terms or file names
 - Lists if describing mul`
 
-
+/**
+ * Fragment Title Generator Prompt
+ *
+ * Used by the title generator agent to create short, descriptive titles
+ * for code fragments. These titles appear on the fragment cards in the
+ * chat interface.
+ *
+ * Guidelines:
+ * - Maximum 3 words
+ * - Title case formatting
+ * - No punctuation or quotes
+ * - Descriptive of what was built
+ *
+ * @constant {string}
+ */
 export const FRAGMENT_TITLE_PROMPT = `
 You are an assistant that generates a short, descriptive title for a code fragment based on its <task_summary>.
 The title should be:
@@ -24,6 +66,30 @@ The title should be:
 Only return the raw title.
 `
 
+/**
+ * Main Code Agent System Prompt
+ *
+ * This is the comprehensive system prompt for the code generation agent.
+ * It defines the agent's:
+ * - Environment (Next.js sandbox)
+ * - Available tools (terminal, createOrUpdateFiles, readFiles)
+ * - Constraints and rules
+ * - Output format requirements
+ *
+ * Key Environment Details:
+ * - Next.js 16.1.0 sandbox
+ * - Pre-installed: Shadcn UI, Tailwind CSS, Lucide React
+ * - Main file: app/page.tsx
+ * - Dev server already running on port 3000
+ *
+ * Important Rules:
+ * - Always use "use client" for client components
+ * - Never run npm run dev/build/start
+ * - Use relative paths for file creation
+ * - Must end with <task_summary> tag
+ *
+ * @constant {string}
+ */
 export const PROMPT = `
 You are a senior software engineer working in a sandboxed Next.js 16.1.0 environment.
 
@@ -70,7 +136,7 @@ Instructions:
 Shadcn UI dependencies — including radix-ui, lucide-react, class-variance-authority, and tailwind-merge — are already installed and must NOT be installed again. Tailwind CSS and its plugins are also preconfigured. Everything else requires explicit installation.
 
 3. Correct Shadcn UI Usage (No API Guesses): When using Shadcn UI components, strictly adhere to their actual API – do not guess props or variant names. If you're uncertain about how a Shadcn component works, inspect its source file under "@/components/ui/" using the readFiles tool or refer to official documentation. Use only the props and variants that are defined by the component.
-   - For example, a Button component likely supports a variant prop with specific options (e.g. "default", "outline", "secondary", "destructive", "ghost"). Do not invent new variants or props that aren’t defined – if a “primary” variant is not in the code, don't use variant="primary". Ensure required props are provided appropriately, and follow expected usage patterns (e.g. wrapping Dialog with DialogTrigger and DialogContent).
+   - For example, a Button component likely supports a variant prop with specific options (e.g. "default", "outline", "secondary", "destructive", "ghost"). Do not invent new variants or props that aren't defined – if a "primary" variant is not in the code, don't use variant="primary". Ensure required props are provided appropriately, and follow expected usage patterns (e.g. wrapping Dialog with DialogTrigger and DialogContent).
    - Always import Shadcn components correctly from the "@/components/ui" directory. For instance:
      import { Button } from "@/components/ui/button";
      Then use: <Button variant="outline">Label</Button>
