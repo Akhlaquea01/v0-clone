@@ -179,3 +179,95 @@ export const getMessages = async (projectId) => {
 
     return messages;
 };
+
+/**
+ * Restores a fragment to a new sandbox
+ *
+ * Creates a new E2B sandbox with the files from the specified fragment.
+ * Updates the fragment's sandboxUrl in the database to the new sandbox URL.
+ * This allows viewing previous code versions after the original sandbox expired.
+ *
+ * @async
+ * @param {string} fragmentId - The fragment ID to restore
+ * @returns {Promise<Object>} Object with success status and new sandbox URL
+ * @throws {Error} If user is not authenticated
+ * @throws {Error} If fragment is not found
+ *
+ * @example
+ * const result = await restoreFragment("fragmentId123");
+ * // result = { success: true, sandboxUrl: "http://..." }
+ */
+export const restoreFragment = async (fragmentId) => {
+    // Import here to avoid loading E2B on every action
+    const Sandbox = (await import("@e2b/code-interpreter")).default;
+
+    // =========================================================================
+    // AUTHENTICATION
+    // =========================================================================
+
+    const user = await getCurrentUser();
+
+    if (!user) {
+        throw new Error("Unauthorized");
+    }
+
+    // =========================================================================
+    // FETCH FRAGMENT
+    // =========================================================================
+
+    const fragment = await db.fragment.findUnique({
+        where: { id: fragmentId },
+        include: {
+            message: {
+                include: {
+                    project: true
+                }
+            }
+        }
+    });
+
+    if (!fragment) {
+        throw new Error("Fragment not found");
+    }
+
+    // Verify user owns the project
+    if (fragment.message?.project?.userId !== user.id) {
+        throw new Error("Unauthorized");
+    }
+
+    // =========================================================================
+    // CREATE NEW SANDBOX
+    // =========================================================================
+
+    try {
+        // Create a new sandbox with the Next.js template
+        const sandbox = await Sandbox.create("v0-nextjs-build-new");
+
+        // Restore files from the fragment
+        const files = fragment.files || {};
+
+        for (const [filePath, content] of Object.entries(files)) {
+            await sandbox.files.write(filePath, content);
+        }
+
+        // Get the new sandbox URL
+        const host = sandbox.getHost(3000);
+        const newSandboxUrl = `http://${host}`;
+
+        // Update the fragment with the new sandbox URL
+        await db.fragment.update({
+            where: { id: fragmentId },
+            data: { sandboxUrl: newSandboxUrl }
+        });
+
+        return {
+            success: true,
+            sandboxUrl: newSandboxUrl,
+            sandboxId: sandbox.sandboxId
+        };
+    } catch (error) {
+        console.error("Failed to restore fragment:", error);
+        throw new Error(`Failed to restore fragment: ${error.message}`);
+    }
+};
+

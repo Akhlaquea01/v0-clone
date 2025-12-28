@@ -60,7 +60,36 @@ const model = gemini({ model: process.env.MODEL });
  * @param {string} event.data.projectId - The project ID for context
  */
 export const codeAgentFunction = inngest.createFunction(
-    { id: "code-agent" },
+    {
+        id: "code-agent",
+        // Limit retries to 2 attempts to avoid wasting resources on persistent failures
+        retries: 2,
+        // Handle failures by saving error message to database
+        onFailure: async ({ event, error }) => {
+            try {
+                // The event structure in onFailure: event.data.event contains the original event
+                const projectId = event?.data?.event?.data?.projectId;
+
+                if (!projectId) {
+                    console.error("No projectId found in onFailure event:", JSON.stringify(event));
+                    return;
+                }
+
+                // Save error message to database so UI reflects the failure
+                await db.message.create({
+                    data: {
+                        projectId: projectId,
+                        content: `Sorry, I encountered an error while processing your request: ${error?.message || "Unknown error"}. Please try again.`,
+                        role: MessageRole.ASSISTANT,
+                        type: MessageType.ERROR
+                    }
+                });
+                console.log("Error message saved for project:", projectId);
+            } catch (dbError) {
+                console.error("Failed to save error message:", dbError);
+            }
+        }
+    },
     { event: "code-agent/run" },
 
     async ({ event, step }) => {
@@ -141,6 +170,38 @@ export const codeAgentFunction = inngest.createFunction(
                 };
             }
         );
+
+        // =====================================================================
+        // STEP 3: RESTORE PREVIOUS FILES TO SANDBOX
+        // =====================================================================
+
+        /**
+         * Restore previous files to the new sandbox
+         * Since sandboxes are ephemeral, we need to write existing files
+         * from the database back to the sandbox filesystem
+         */
+        await step.run("restore-previous-files", async () => {
+            const fileEntries = Object.entries(latestFiles || {});
+
+            // Only run if there are files to restore
+            if (fileEntries.length === 0) {
+                return { restored: 0 };
+            }
+
+            try {
+                const sandbox = await Sandbox.connect(sandboxId);
+
+                // Write each file back to the sandbox
+                for (const [filePath, content] of fileEntries) {
+                    await sandbox.files.write(filePath, content);
+                }
+
+                return { restored: fileEntries.length };
+            } catch (error) {
+                console.error("Error restoring files:", error);
+                return { restored: 0, error: error.message };
+            }
+        });
 
         // =====================================================================
         // INITIALIZE AGENT STATE

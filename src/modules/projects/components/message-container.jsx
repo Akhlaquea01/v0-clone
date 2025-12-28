@@ -167,8 +167,12 @@ const MessageContainer = ({ projectId, activeFragment, setActiveFragment }) => {
     // =========================================================================
 
     // Determine if we should show the loading indicator
+    // Only show if last message is from user AND is recent (within 5 minutes)
     const lastMessage = messages[messages.length - 1];
     const isLastMessageUser = lastMessage.role === MessageRole.USER;
+    const messageAge = Date.now() - new Date(lastMessage.createdAt).getTime();
+    const isRecentMessage = messageAge < 5 * 60 * 1000; // 5 minutes
+    const showLoading = isLastMessageUser && isRecentMessage;
 
     return (
         <div className="flex flex-col flex-1 min-h-0">
@@ -188,7 +192,7 @@ const MessageContainer = ({ projectId, activeFragment, setActiveFragment }) => {
                 ))}
 
                 {/* Show loading indicator when waiting for AI response */}
-                {isLastMessageUser && <MessageLoading />}
+                {showLoading && <MessageLoading />}
 
                 {/* Scroll anchor for auto-scroll functionality */}
                 <div ref={bottomRef} />
