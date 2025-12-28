@@ -724,3 +724,112 @@
    npx prisma generate
 
 
+## 18. Bug Fixes & Improvements (Session: Dec 28, 2025)
+
+   ### Bug Fixes
+
+   #### 1. Duplicate Toast Messages
+   # File: src/modules/projects/components/message-form.jsx
+   # Issue: Two success toasts appeared when sending a message
+   # Fix: Removed duplicate `toast.success()` call
+
+   #### 2. Upgrade Button Always Visible
+   # File: src/modules/projects/components/project-view.jsx
+   # Issue: "Upgrade" button shown to all users including pro users
+   # Fix: Added conditional rendering using `useAuth().has({ plan: "pro" })`
+
+   #### 3. Enter Key Not Working for Form Submission
+   # Files: message-form.jsx, project-form.jsx
+   # Issue: Required Ctrl+Enter instead of just Enter to submit
+   # Fix: Changed to Enter for submit, Shift+Enter for newline
+
+   #### 4. Query Invalidation Bug
+   # File: src/modules/projects/hooks/project.js
+   # Issue: `invalidateQueries({ queryKey: ["projects", "status"] })` incorrect
+   # Fix: Split into separate calls for ["projects"] and ["status"]
+
+   #### 5. Error Constructor Misuse
+   # Files: projects/actions/index.js, messages/actions/index.js
+   # Issue: `throw new Error({...})` doesn't work correctly
+   # Fix: Changed to `throw new Error("message string")`
+
+   ### New Features
+
+   #### 1. Restore Previous Fragment Versions
+   # Problem: E2B sandbox URLs expire, old previews don't work
+   # Files:
+   #   - src/modules/messages/actions/index.js (restoreFragment action)
+   #   - src/modules/projects/components/fragment-web.jsx (Restore button)
+   # How it works:
+   #   - Click "Restore" button on any fragment preview
+   #   - Creates new sandbox with files from that fragment
+   #   - Preview loads the restored version
+
+   #### 2. Project Delete Functionality
+   # Files:
+   #   - src/modules/projects/actions/index.js (deleteProject action)
+   #   - src/modules/projects/hooks/project.js (useDeleteProject hook)
+   #   - src/modules/home/components/project-list.jsx (delete button UI)
+   # Features:
+   #   - Trash icon appears on hover over project cards
+   #   - Confirmation dialog prevents accidental deletion
+   #   - Cascade deletes all messages and fragments
+   #   - Toast notification on success/error
+
+   #### 3. Improved Loading Indicator
+   # File: src/modules/projects/components/message-loader.jsx
+   # Changes:
+   #   - Time-based workflow stage messages (not random)
+   #   - Progress bar showing elapsed time
+   #   - Warning after 2 minutes of waiting
+   # Stages:
+   #   - 0-5s: "Connecting to sandbox..."
+   #   - 5-10s: "Loading project context..."
+   #   - 10-20s: "Analyzing your request..."
+   #   - 20-40s: "Generating code..."
+   #   - 40-60s: "Building and testing..."
+   #   - 60-90s: "Finalizing response..."
+   #   - 90s+: "Still working on it..."
+
+   #### 4. Inngest Failure Handling
+   # File: src/inngest/functions.js
+   # Changes:
+   #   - Added `retries: 2` (max 2 attempts)
+   #   - Added `onFailure` callback to save error message to DB
+   #   - UI now updates when Inngest fails instead of staying stuck
+
+   #### 5. Sandbox File Restoration
+   # File: src/inngest/functions.js
+   # Issue: Previous files not restored to new sandboxes
+   # Fix: Added "restore-previous-files" step that writes files from DB to sandbox
+
+   ### Code Quality Improvements
+
+   #### Comprehensive JSDoc Comments Added To:
+   # - All project/message actions and hooks
+   # - All UI components (forms, containers, cards)
+   # - Core library files (db.js, usage.js, middleware.js)
+   # - Inngest functions and utilities
+   # - Prompt configurations
+
+   #### Loading State Time Check
+   # File: src/modules/projects/components/message-container.jsx
+   # Change: Only show loading for messages less than 5 minutes old
+   # Prevents loader showing for old conversations
+
+## 19. AlertDialog Pattern for Links
+
+   # When using AlertDialog inside a Link, use controlled state:
+   #
+   # const [dialogOpen, setDialogOpen] = useState(false);
+   #
+   # <Button onClick={(e) => {
+   #     e.preventDefault();
+   #     e.stopPropagation();
+   #     setDialogOpen(true);
+   # }}>Delete</Button>
+   #
+   # <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+   #     ... dialog content at root level, NOT inside Link ...
+   # </AlertDialog>
+

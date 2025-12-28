@@ -8,13 +8,14 @@
  * Hooks:
  * - useGetProjects: Fetches all projects for the current user
  * - useCreateProject: Creates a new project with optimistic updates
+ * - useDeleteProject: Deletes a project and related data
  * - useGetProjectById: Fetches a single project by ID
  *
  * @module modules/projects/hooks/project
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { createProject, getProjectById, getProjects } from "../actions"
+import { createProject, deleteProject, getProjectById, getProjects } from "../actions"
 
 /**
  * Hook to fetch all projects for the current user
@@ -76,6 +77,33 @@ export const useCreateProject = () => {
 
             // Invalidate usage status since creating a project consumes credits
             queryClient.invalidateQueries({ queryKey: ["status"] })
+        }
+    })
+}
+
+/**
+ * Hook to delete a project
+ *
+ * Deletes a project and all its related data (messages, fragments).
+ * On success, invalidates the projects list cache.
+ *
+ * @returns {UseMutationResult} React Query mutation result containing:
+ *   - mutateAsync: Async function to delete project
+ *   - isPending: Boolean indicating mutation in progress
+ *   - isError: Boolean indicating mutation failed
+ *   - error: Error object if mutation failed
+ *
+ * @example
+ * const { mutateAsync, isPending } = useDeleteProject();
+ * await mutateAsync("cuid123456");
+ */
+export const useDeleteProject = () => {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: (projectId) => deleteProject(projectId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["projects"] })
         }
     })
 }

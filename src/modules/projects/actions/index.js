@@ -196,3 +196,60 @@ export const getProjectById = async (projectId) => {
 
     return project;
 };
+
+/**
+ * Deletes a project and all its related data
+ *
+ * This action deletes a project along with all its messages and fragments.
+ * The cascade is handled by the database (onDelete: Cascade in Prisma schema).
+ *
+ * @async
+ * @param {string} projectId - The unique identifier of the project to delete
+ * @returns {Promise<Object>} Object with success status
+ * @throws {Error} If user is not authenticated
+ * @throws {Error} If project is not found or doesn't belong to user
+ *
+ * @example
+ * await deleteProject("cuid123456");
+ * // Deletes project, all messages, and all fragments
+ */
+export const deleteProject = async (projectId) => {
+    // =========================================================================
+    // AUTHENTICATION
+    // =========================================================================
+
+    const user = await getCurrentUser();
+
+    if (!user) {
+        throw new Error("Unauthorized");
+    }
+
+    // =========================================================================
+    // VERIFY OWNERSHIP
+    // =========================================================================
+
+    const project = await db.project.findUnique({
+        where: {
+            id: projectId,
+            userId: user.id,
+        },
+    });
+
+    if (!project) {
+        throw new Error("Project not found");
+    }
+
+    // =========================================================================
+    // DELETE PROJECT (CASCADE)
+    // =========================================================================
+
+    // Delete the project - messages and fragments are deleted via cascade
+    await db.project.delete({
+        where: {
+            id: projectId,
+        },
+    });
+
+    return { success: true };
+};
+
