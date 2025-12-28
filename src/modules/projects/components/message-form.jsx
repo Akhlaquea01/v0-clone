@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Form, FormField } from "@/components/ui/form";
 import { onInvoke } from "../actions";
 import { useCreateMessages } from "@/modules/messages/hooks/message";
+import { Usage } from "@/modules/usage/components/usage";
+import { useStatus } from "@/modules/usage/hooks/usage";
 
 // import { onInvoke } from "../actions";
 
@@ -30,7 +32,8 @@ const MessageForm = ({ projectId }) => {
     const [isFocused, setIsFocused] = useState(false);
 
     const { mutateAsync, isPending } = useCreateMessages(projectId)
-
+    const { data: usage } = useStatus()
+    const showUsage = !!usage
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -57,6 +60,11 @@ const MessageForm = ({ projectId }) => {
 
     return (
         <Form {...form}>
+            {
+                showUsage && (
+                    <Usage />
+                )
+            }
             <form
                 onSubmit={form.handleSubmit(onSubmit)}
                 className={cn(

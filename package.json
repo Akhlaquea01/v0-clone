@@ -46,6 +46,8 @@
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
+    "@clerk/themes": "^2.4.24",
+    "rate-limiter-flexible": "^8.0.1",
     "inngest": "^3.44.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.562.0",

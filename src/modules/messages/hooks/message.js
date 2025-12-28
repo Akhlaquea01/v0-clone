@@ -30,6 +30,9 @@ export const useCreateMessages = (projectId) => {
             queryClient.invalidateQueries({
                 queryKey: ["messages", projectId]
             })
+            queryClient.invalidateQueries({
+                queryKey: ["status"]
+            })
         }
     })
 }

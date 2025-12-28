@@ -106,54 +106,167 @@
    npm run lint
    # Runs ESLint to check for code issues
 
-## 9. New Implementations & Packages
+## 9. All Packages & Dependencies
 
-   ### Inngest (Background Jobs)
-   npm install inngest @inngest/agent-kit
-   # Purpose: Handling background jobs, workflows, and AI agent execution.
-   # Key Files:
-   #   - src/inngest/client.js: Initialized Inngest client
-   #   - src/app/api/inngest/route.js: Next.js API route to handle Inngest events
-   #   - src/inngest/functions.js: Define your background functions (e.g., helloWorld)
+   ### Core Framework
+   # next@16.1.0 - React framework with App Router, Turbopack
+   # react@19.2.3 - UI library
+   # react-dom@19.2.3 - React DOM renderer
 
-   #### Run Inngest Dev Server
+   ### Authentication
+   npm install @clerk/nextjs @clerk/themes
+   # @clerk/nextjs@^6.36.5 - Clerk authentication for Next.js
+   #   - Components: SignIn, SignUp, UserButton
+   #   - Middleware for route protection
+   #   - Files: src/middleware.js, wrap layout with ClerkProvider
+   # @clerk/themes@^2.4.24 - Pre-built themes for Clerk components
+   #   - Usage: <ClerkProvider appearance={{ baseTheme: dark }}>
+
+   ### Database
+   npm install prisma@5.22.0 @prisma/client@5.22.0
+   # prisma@^5.22.0 - CLI for migrations and schema management
+   # @prisma/client@^5.22.0 - Auto-generated type-safe database client
+   # NOTE: Using v5.22.0 for stability with Next.js 16
+
+   ### AI & Background Jobs
+   npm install inngest @inngest/agent-kit @e2b/code-interpreter zod
+   # inngest@^3.44.0 - Durable workflow execution
+   # @inngest/agent-kit@^0.13.0 - AI agent framework
+   #   - createAgent, createTool, createNetwork, createState
+   # @e2b/code-interpreter@^2.3.3 - Sandboxed code execution
+   # zod@^4.2.1 - Schema validation for tool parameters
+
+   #### Inngest Dev Server
    npx inngest-cli@latest dev
-   # Opens Inngest dashboard at http://localhost:8288
-   # Connects to your local Next.js app to trigger/test functions
+   # Opens dashboard at http://localhost:8288
 
-   ### TanStack Query (React Query)
+   #### E2B CLI (for template management)
+   npm install -g @e2b/cli
+   e2b auth login
+   e2b template build --name your-template --cmd "/compile_page.sh"
+
+   ### State Management & Data Fetching
    npm install @tanstack/react-query
-   # Purpose: Managing server state, caching, and data fetching in React components.
+   # @tanstack/react-query@^5.90.2 - Server state, caching, mutations
    # Implementation:
-   #   - Wrapped app in `QueryClientProvider` (src/components/query-provider.jsx)
-   #   - Using `useQuery` and `useMutation` hooks for data handling
+   #   - Wrapped app in QueryClientProvider (src/components/query-provider.jsx)
+   #   - Using useQuery and useMutation hooks
 
-   ### React Query Hooks (Project Module)
-   # Location: src/modules/projects/hooks/project.js
-   # Available Hooks:
-   #   - useGetProjects(): Fetches all user projects
-   #   - useCreateProject(): Mutation to create a new project
-   #   - useGetProjectById(projectId): Fetches a single project by ID
+   ### UI Component Libraries
+   npx shadcn@latest init
+   npm install class-variance-authority clsx tailwind-merge lucide-react
+   # Shadcn UI - Pre-built accessible components from @/components/ui/
+   # class-variance-authority@^0.7.1 - Component variants
+   # clsx@^2.1.1 - Conditional class names
+   # tailwind-merge@^3.4.0 - Merge Tailwind classes
+   # lucide-react@^0.562.0 - Icon library
+   #   - Usage: import { IconName } from "lucide-react"
 
-   ### Sonner (Toast Notifications)
-   npm install sonner
-   # Purpose: Showing success/error toast notifications.
-   # Implementation:
-   #   - Added `<Toaster />` to `src/app/layout.js` inside ThemeProvider
-   #   - Usage: `toast.success("Message")` or `toast.error("Error")`
+   ### Radix UI Primitives (installed with Shadcn)
+   # @radix-ui/react-accordion, @radix-ui/react-alert-dialog
+   # @radix-ui/react-avatar, @radix-ui/react-checkbox
+   # @radix-ui/react-collapsible, @radix-ui/react-dialog
+   # @radix-ui/react-dropdown-menu, @radix-ui/react-label
+   # @radix-ui/react-popover, @radix-ui/react-progress
+   # @radix-ui/react-scroll-area, @radix-ui/react-select
+   # @radix-ui/react-separator, @radix-ui/react-slider
+   # @radix-ui/react-slot, @radix-ui/react-switch
+   # @radix-ui/react-tabs, @radix-ui/react-toggle
+   # @radix-ui/react-tooltip, @radix-ui/react-hover-card
+   # @radix-ui/react-context-menu, @radix-ui/react-menubar
+   # @radix-ui/react-navigation-menu, @radix-ui/react-radio-group
+   # @radix-ui/react-aspect-ratio, @radix-ui/react-toggle-group
 
-   ### React Resizable Panels (Project View Layout)
+   ### Layout & Panels
    npm install react-resizable-panels@3.0.6
-   # Purpose: Create resizable split-pane layouts for the project view.
+   # react-resizable-panels@^3.0.6 - Resizable split-pane layouts
    # Components: ResizablePanelGroup, ResizablePanel, ResizableHandle
-   # Usage: Project view splits into chat panel (35%) and preview panel (65%)
-   # NOTE: Using v3.0.6 for compatibility with Next.js 16
+   # NOTE: v3.0.6 for Next.js 16 compatibility
+   # Usage: Project view splits chat (35%) and preview (65%)
 
-   ### PrismJS (Syntax Highlighting)
+   ### Forms
+   npm install react-hook-form @hookform/resolvers react-textarea-autosize
+   # react-hook-form@^7.68.0 - Form state management
+   # @hookform/resolvers@^5.2.2 - Validation resolvers (Zod integration)
+   # react-textarea-autosize@^8.5.9 - Auto-expanding textareas
+   #   - Usage: Chat input form with auto-resize
+
+   ### Notifications
+   npm install sonner
+   # sonner@^2.0.7 - Toast notifications
+   # Setup: Add <Toaster /> to layout.js inside ThemeProvider
+   # Usage: toast.success("Message"), toast.error("Error")
+
+   ### Theming
+   npm install next-themes
+   # next-themes@^0.4.6 - Dark/Light mode switching
+   # Setup: Wrap app in ThemeProvider with attribute="class"
+   # Usage: useTheme() hook for theme switching
+
+   ### Syntax Highlighting
    npm install prismjs
-   # Purpose: Syntax highlighting for code view in file explorer
-   # Languages: typescript, jsx, python, tsx, javascript
-   # Theme: Custom GitHub-style dark/light theme (code-theme.css)
+   # prismjs@^1.30.0 - Code syntax highlighting
+   # Languages: typescript, jsx, tsx, javascript, python
+   # Theme: Custom GitHub-style (code-theme.css)
+   # Usage: In CodeView component for file explorer
+
+   ### Markdown Rendering
+   npm install streamdown
+   # streamdown@^1.3.0 - Streaming markdown renderer
+   # Usage: <Response>{markdownContent}</Response>
+   # Location: src/components/ai-elements/response.jsx
+
+   ### Date & Time
+   npm install date-fns
+   # date-fns@^4.1.0 - Date utility library
+   # Usage: formatDistanceToNow for relative timestamps
+
+   ### Carousel
+   npm install embla-carousel-react
+   # embla-carousel-react@^8.6.0 - Carousel component
+   # Used in: ProjectList mobile view with navigation arrows
+
+   ### Charts
+   npm install recharts
+   # recharts@^2.15.4 - Charting library
+   # Usage: Dashboard analytics, usage stats
+
+   ### Drawer/Sheet
+   npm install vaul
+   # vaul@^1.1.2 - Drawer component for mobile
+   # Used with: Shadcn Sheet component
+
+   ### Command Palette
+   npm install cmdk
+   # cmdk@^1.1.1 - Command menu component
+   # Used with: Shadcn Command component
+
+   ### Date Picker
+   npm install react-day-picker
+   # react-day-picker@^9.13.0 - Calendar/date picker
+   # Used with: Shadcn Calendar component
+
+   ### OTP Input
+   npm install input-otp
+   # input-otp@^1.4.2 - OTP input component
+   # Used with: Shadcn InputOTP component
+
+   ### Utilities
+   npm install random-word-slugs
+   # random-word-slugs@^0.1.7 - Generate random project names
+   # Usage: Default project name generation
+
+   npm install rate-limiter-flexible
+   # rate-limiter-flexible@^8.0.1 - API rate limiting
+   # Usage: Protect API routes from abuse
+
+   ### Dev Dependencies
+   npm install -D tailwindcss@4 @tailwindcss/postcss eslint eslint-config-next tw-animate-css
+   # tailwindcss@^4 - CSS framework
+   # @tailwindcss/postcss - PostCSS plugin
+   # eslint@^9 - Linting
+   # eslint-config-next@16.1.0 - Next.js ESLint config
+   # tw-animate-css@^1.4.0 - Tailwind animation utilities
 
 ## 12. Project View UI Components
 
@@ -432,9 +545,35 @@
    # Enable Developer Mode in Windows Settings:
    # Settings > Privacy & Security > For Developers > Developer Mode ON
 
-   ### Hydration Mismatch Errors
-   # Add suppressHydrationWarning to <html> and <body> tags
-   # Use dynamic prop on ClerkProvider: <ClerkProvider dynamic>
+   ### Hydration Mismatch Errors (ResizablePanels, Radix UI)
+   # Cause: Components like ResizablePanelGroup, Tabs, DropdownMenu generate
+   #        unique IDs that differ between server and client renders.
+   #
+   # Error Message: "A tree hydrated but some attributes of the server rendered
+   #                 HTML didn't match the client properties"
+   #
+   # Fix: Use Next.js dynamic import with ssr: false via a Client Component wrapper
+   #
+   # Step 1: Create a wrapper component (src/app/projects/[projectId]/project-view-wrapper.jsx):
+   #   "use client";
+   #   import dynamic from "next/dynamic";
+   #   const ProjectView = dynamic(
+   #       () => import("@/modules/projects/components/project-view"),
+   #       { ssr: false }
+   #   );
+   #   export default function ProjectViewWrapper({ projectId }) {
+   #       return <ProjectView projectId={projectId} />;
+   #   }
+   #
+   # Step 2: Use the wrapper in the page (src/app/projects/[projectId]/page.jsx):
+   #   import ProjectViewWrapper from "./project-view-wrapper";
+   #   const Page = async ({ params }) => {
+   #       const { projectId } = await params;
+   #       return <ProjectViewWrapper projectId={projectId} />;
+   #   };
+   #
+   # NOTE: ssr: false is NOT allowed in Server Components in Next.js 16+
+   #       You MUST use a "use client" wrapper component for this pattern
 
    ### Theme/Dark Mode Not Working
    # Issue: LocalStorage conflict or Tailwind v4 variant specificity
@@ -475,3 +614,113 @@
    ### 404 on /projects/[id] after project creation
    # Cause: Missing dynamic route page.
    # Fix: Create src/app/(root)/projects/[projectId]/page.jsx
+
+## 15. Conversation History & Agent Context
+
+   ### Overview
+   # The AI agent now has memory of previous conversations and files.
+   # This enables follow-up requests like "add a contact form" or "change the color"
+   # to build upon existing work instead of starting from scratch.
+
+   ### Implementation Details (src/inngest/functions.js)
+
+   # 1. Import createState from @inngest/agent-kit:
+   #    import { createAgent, createTool, createNetwork, createState } from "@inngest/agent-kit";
+
+   # 2. Load Previous Messages & Files:
+   #    const { formattedMessages, latestFiles } = await step.run(
+   #        "get-previous-messages",
+   #        async () => {
+   #            const messages = await db.message.findMany({
+   #                where: { projectId, type: { not: "ERROR" } },
+   #                orderBy: { createdAt: "asc" },  // Chronological order!
+   #                include: { fragments: true },
+   #                take: 30  // Limit for token efficiency
+   #            });
+   #
+   #            // Build formatted messages and extract files from fragments
+   #            // ...
+   #            return { formattedMessages, latestFiles };
+   #        }
+   #    );
+
+   # 3. Create State with History:
+   #    const state = createState(
+   #        { summary: "", files: latestFiles || {} },
+   #        { messages: formattedMessages || [] }
+   #    );
+
+   # 4. Pass State to Network Run:
+   #    const result = await network.run(event.data.value, { state });
+
+   # 5. Dynamic System Prompt with File Context:
+   #    const buildContextPrompt = () => {
+   #        const existingFileNames = Object.keys(latestFiles || {});
+   #        if (existingFileNames.length === 0) return PROMPT;
+   #
+   #        const filesContext = `
+   #        CONVERSATION CONTEXT:
+   #        You are continuing a previous conversation.
+   #        Files already created: ${existingFileNames.join(", ")}
+   #        ...
+   #        `;
+   #        return filesContext + PROMPT;
+   #    };
+
+   ### Key Points:
+   # - Messages sorted ASC (chronological) not DESC
+   # - Include fragments relation to get file data
+   # - Exclude ERROR type messages from context
+   # - Limit to 30 messages to prevent token overflow
+   # - Pre-load files into state.data.files for agent access
+   # - Inject file list into system prompt for context awareness
+
+## 16. Clerk Plans & Usage Tracking
+
+   ### Clerk Dashboard Setup
+   # 1. Go to Clerk Dashboard > Users > Metadata
+   # 2. Add custom public metadata for plans:
+   #    - plan: "free" | "pro" | "enterprise"
+   #    - usage: { tokens: number, limit: number }
+
+   ### Rate Limiting Implementation
+   # Using rate-limiter-flexible for API protection
+   # See: src/lib/rate-limiter.js
+   # Protected routes: /api/messages, Inngest triggers
+
+## 17. Recent Updates & File Changes
+
+   ### src/app/projects/[projectId]/page.jsx
+   # Changed: Uses ProjectViewWrapper instead of direct ProjectView import
+   # Reason: Fixes hydration mismatch from SSR
+
+   ### src/app/projects/[projectId]/project-view-wrapper.jsx (NEW)
+   # Purpose: Client-side wrapper with dynamic import (ssr: false)
+   # Fixes: Hydration mismatch from ResizablePanels and Radix UI
+
+   ### src/inngest/functions.js
+   # Enhanced: Added conversation history loading with createState
+   # Features:
+   #   - Loads previous messages in chronological order
+   #   - Extracts files from fragments into initial state
+   #   - Dynamic system prompt with file context
+   #   - Excludes error messages from history
+   #   - Limits to 30 messages for token efficiency
+
+## Quick Reference: Install All Packages
+
+   ### One-liner to install all dependencies:
+   npm install @clerk/nextjs @clerk/themes @prisma/client @tanstack/react-query @inngest/agent-kit @e2b/code-interpreter inngest zod sonner next-themes react-resizable-panels@3.0.6 react-hook-form @hookform/resolvers react-textarea-autosize prismjs streamdown date-fns embla-carousel-react recharts vaul cmdk react-day-picker input-otp random-word-slugs rate-limiter-flexible
+
+   ### Dev dependencies:
+   npm install -D tailwindcss@4 @tailwindcss/postcss eslint eslint-config-next tw-animate-css
+
+   ### Initialize Shadcn (installs Radix UI + utilities):
+   npx shadcn@latest init
+
+   ### Prisma:
+   npm install prisma@5.22.0 @prisma/client@5.22.0
+   npx prisma init
+   npx prisma generate
+
+

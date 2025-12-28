@@ -4,6 +4,7 @@ import {
     createAgent,
     createTool,
     createNetwork,
+    createState,
 } from "@inngest/agent-kit";
 import Sandbox from "@e2b/code-interpreter";
 import z from "zod";
@@ -24,10 +25,99 @@ export const codeAgentFunction = inngest.createFunction(
             return sandbox.sandboxId;
         });
 
+        const { formattedMessages, latestFiles } = await step.run(
+            "get-previous-messages",
+            async () => {
+                const formattedMessages = [];
+                let latestFiles = {};
+
+                // Get messages in chronological order (ascending) with their fragments
+                // Exclude error messages from context, limit to last 20 for token efficiency
+                const messages = await db.message.findMany({
+                    where: {
+                        projectId: event.data.projectId,
+                        type: {
+                            not: "ERROR"  // Exclude error messages from context
+                        }
+                    },
+                    orderBy: {
+                        createdAt: "asc"  // Chronological order is important for context
+                    },
+                    include: {
+                        fragments: true  // Include fragments to get file context
+                    },
+                    take: 30  // Limit to prevent token overflow
+                });
+
+                for (const message of messages) {
+                    // Build message content with context
+                    let messageContent = message.content;
+
+                    // If this is an assistant message with a fragment, include file summary
+                    if (message.role === "ASSISTANT" && message.fragments) {
+                        const fragment = message.fragments;
+                        const fileNames = Object.keys(fragment.files || {});
+
+                        // Update latest files (for initial state)
+                        latestFiles = { ...latestFiles, ...fragment.files };
+
+                        // Add file context to message
+                        if (fileNames.length > 0) {
+                            messageContent += `\n\n[Files created/modified: ${fileNames.join(", ")}]`;
+                        }
+                    }
+
+                    formattedMessages.push({
+                        type: "text",
+                        role: message.role === "ASSISTANT" ? "assistant" : "user",
+                        content: messageContent
+                    });
+                }
+
+                return {
+                    formattedMessages,
+                    latestFiles
+                };
+            }
+        );
+
+        // Create state with previous files and message history
+        const state = createState(
+            {
+                summary: "",
+                files: latestFiles || {}  // Initialize with previous files
+            },
+            {
+                messages: formattedMessages || []
+            }
+        );
+
+        // Build context about existing files for the agent
+        const buildContextPrompt = () => {
+            const existingFileNames = Object.keys(latestFiles || {});
+            if (existingFileNames.length === 0) {
+                return PROMPT;
+            }
+
+            const filesContext = `
+CONVERSATION CONTEXT:
+You are continuing a previous conversation. The following files have already been created in previous interactions:
+${existingFileNames.map(f => `- ${f}`).join("\n")}
+
+When the user asks for modifications or enhancements:
+1. First use readFiles to check the current content of relevant files
+2. Build upon existing code instead of recreating from scratch
+3. Maintain consistency with the existing codebase structure and styling
+4. If the user references previous work, you have access to it in the files above
+
+`;
+            return filesContext + PROMPT;
+        };
+
         const codeAgent = createAgent({
             name: "code-agent",
             description: "An expert coding agent",
-            system: PROMPT,
+            system: buildContextPrompt(),
             model: model,
             tools: [
                 // 1. Terminal
@@ -165,7 +255,7 @@ export const codeAgentFunction = inngest.createFunction(
             },
         });
 
-        const result = await network.run(event.data.value);
+        const result = await network.run(event.data.value, { state });
 
         const fragmentTitleGenerator = createAgent({
             name: "fragment-title-generator",
